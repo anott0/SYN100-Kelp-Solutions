@@ -120,7 +120,7 @@
         vy: 1.5 + Math.random(),
         settled: false,
         growth: 0,
-        maxH: height * (0.48 + Math.random() * 0.28),
+        maxH: height * (0.50 + Math.random() * 0.28),
         phase: Math.random() * Math.PI * 2
       });
     }
@@ -137,20 +137,16 @@
   function drawDiver(d) {
     ctx.save();
     ctx.translate(d.x, d.y);
-    // Diver body
     ctx.fillStyle = '#38bdf8';
     ctx.beginPath();
     ctx.ellipse(0, 0, 22, 7, 0, 0, Math.PI * 2);
     ctx.fill();
-    // Scuba tank
     ctx.fillStyle = '#facc15';
     ctx.fillRect(-10, -11, 16, 5);
-    // Mask
     ctx.fillStyle = '#e0f2fe';
     ctx.beginPath();
     ctx.arc(18, -1, 5, 0, Math.PI * 2);
     ctx.fill();
-    // Fins
     const kick = Math.sin(time * 6) * 5;
     ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 4;
@@ -161,6 +157,42 @@
     ctx.restore();
   }
 
+  function drawSproutedKelp(r) {
+    const currentH = r.maxH * r.growth;
+    const segments = 12;
+    const pts = [];
+    for (let s = 0; s <= segments; s++) {
+      const frac = s / segments;
+      const sway = Math.sin(time + r.phase + frac * 3.2) * (14 * frac);
+      pts.push({ x: r.x + sway, y: r.y - currentH * frac });
+    }
+
+    // Central kelp stalk
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let s = 1; s < pts.length; s++) {
+      ctx.lineTo(pts[s].x, pts[s].y);
+    }
+    ctx.stroke();
+
+    // Leaf blades
+    if (r.growth > 0.16) {
+      ctx.fillStyle = 'rgba(34, 197, 94, 0.9)';
+      for (let s = 2; s < pts.length; s++) {
+        const dir = (s % 2 === 0) ? 1 : -1;
+        const p = pts[s];
+        const bladeLen = (14 - s * 0.35) * r.growth;
+        const bladeWid = 4 * r.growth;
+        ctx.beginPath();
+        ctx.ellipse(p.x + dir * (bladeLen * 0.75), p.y, bladeLen, bladeWid, dir * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
   function draw() {
     time += 0.03;
     const grad = ctx.createLinearGradient(0, 0, 0, height);
@@ -169,11 +201,9 @@
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
-    // Sandy/rocky seabed
     ctx.fillStyle = '#13222e';
     ctx.fillRect(0, height - 28, width, 28);
 
-    // Update & draw divers
     for (let i = divers.length - 1; i >= 0; i--) {
       const d = divers[i];
       d.x += d.speed;
@@ -187,7 +217,7 @@
           vy: 1.6,
           settled: false,
           growth: 0,
-          maxH: height * (0.48 + Math.random() * 0.28),
+          maxH: height * (0.50 + Math.random() * 0.28),
           phase: Math.random() * Math.PI * 2
         });
         updateMetrics();
@@ -196,8 +226,7 @@
       if (d.x > width + 50) divers.splice(i, 1);
     }
 
-    // Update & draw green gravel + growing kelp
-    rocks.forEach((r) => {
+    rocks.forEach(r => {
       if (!r.settled) {
         r.y += r.vy;
         if (r.y >= r.targetY) {
@@ -208,38 +237,15 @@
         r.growth = Math.min(1, r.growth + 0.004);
       }
 
+      if (r.settled && r.growth > 0.02) {
+        drawSproutedKelp(r);
+      }
+
       // Gravel pebble
       ctx.fillStyle = '#4ade80';
       ctx.beginPath();
       ctx.ellipse(r.x, r.y, 6, 4, 0, 0, Math.PI * 2);
       ctx.fill();
-
-      // Sprouting kelp
-      if (r.settled && r.growth > 0.02) {
-        const currentH = r.maxH * r.growth;
-        ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth = 3.5;
-        ctx.beginPath();
-        ctx.moveTo(r.x, r.y);
-
-        const segments = 10;
-        for (let s = 1; s <= segments; s++) {
-          const frac = s / segments;
-          const sway = Math.sin(time + r.phase + frac * 3) * (12 * frac);
-          const px = r.x + sway;
-          const py = r.y - currentH * frac;
-          ctx.lineTo(px, py);
-
-          if (s > 2 && s % 2 === 0 && r.growth > 0.2) {
-            ctx.fillStyle = '#16a34a';
-            ctx.beginPath();
-            const dir = (s % 4 === 0) ? 1 : -1;
-            ctx.ellipse(px + dir * 10 * r.growth, py, 12 * r.growth, 3.5 * r.growth, dir * 0.3, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-        ctx.stroke();
-      }
     });
 
     requestAnimationFrame(draw);
