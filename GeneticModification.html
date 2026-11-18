@@ -36,30 +36,29 @@
 
   .dna-dock {
     position: absolute; top: 14px; left: 16px;
-    background: rgba(15, 37, 55, 0.92); border: 1px solid var(--border);
+    background: rgba(15, 37, 55, 0.9); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(6px);
-    width: 340px;
+    max-width: 340px;
   }
-  .dna-dock h3 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; }
+  .dna-dock h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; }
   .strand { display: flex; gap: 8px; margin-bottom: 10px; }
   .locus {
-    flex: 1; padding: 8px 6px; border-radius: 6px; text-align: center;
-    background: #091926; border: 1.5px dashed var(--muted); transition: 0.2s;
+    flex: 1; padding: 8px; border-radius: 6px; text-align: center;
+    background: #091926; border: 1px dashed var(--muted); transition: 0.2s;
   }
-  .locus.drag-over { border-color: var(--accent); background: rgba(45, 212, 191, 0.22); transform: scale(1.03); }
-  .locus.modified { border: 1.5px solid var(--accent); background: rgba(45, 212, 191, 0.14); }
-  .locus small { display: block; font-size: 10px; color: var(--muted); margin-bottom: 2px; }
-  .locus strong { font-size: 14px; color: var(--text); }
+  .locus.modified { border: 1px solid var(--accent); background: rgba(45, 212, 191, 0.12); }
+  .locus small { display: block; font-size: 10px; color: var(--muted); }
+  .locus strong { font-size: 15px; color: var(--text); }
   .locus.modified strong { color: var(--accent); }
 
-  .alleles { display: flex; gap: 8px; }
-  .allele-tile {
-    flex: 1; padding: 7px 6px; font-size: 12px; font-weight: 700; text-align: center;
-    background: #14344d; color: var(--accent); border: 1px solid var(--accent);
-    border-radius: 6px; cursor: grab; user-select: none; transition: 0.15s;
+  .alleles { display: flex; gap: 6px; flex-wrap: wrap; }
+  .allele-btn {
+    flex: 1; padding: 6px 8px; font-size: 11px; font-weight: 600;
+    background: #14344d; color: var(--text); border: 1px solid var(--accent);
+    border-radius: 6px; cursor: pointer; transition: 0.15s;
   }
-  .allele-tile:hover:not(.used) { background: var(--accent); color: #042f2e; }
-  .allele-tile.used { opacity: 0.35; cursor: default; pointer-events: none; border-color: var(--border); color: var(--muted); }
+  .allele-btn:hover:not(:disabled) { background: var(--accent); color: #042f2e; }
+  .allele-btn:disabled { opacity: 0.4; cursor: default; border-color: var(--border); }
 
   footer {
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -80,12 +79,12 @@
 <header>
   <div class="title-group">
     <h1>1. Heat-Tolerant Genetics (SNP Modification)</h1>
-    <p>Drag heat-resistant base pairs onto the DNA strand (or click) to boost thermal resilience</p>
+    <p>Substitute heat-shock alleles to stabilize kelp membranes during marine heatwaves</p>
   </div>
   <div class="metrics">
     <div class="metric">
       <span>Thermal Tolerance</span>
-      <strong id="tolVal">15.0°C Max</strong>
+      <strong id="tolVal">15°C Max</strong>
     </div>
     <div class="metric">
       <span>Kelp Survival</span>
@@ -97,23 +96,23 @@
 <div id="viewport">
   <canvas id="ocean"></canvas>
   <div class="dna-dock">
-    <h3>Drag Base Pairs Into Matching DNA Slots</h3>
+    <h3>Target Thermal Loci (Click to Substitute)</h3>
     <div class="strand">
-      <div class="locus" id="loc0" data-idx="0"><small>HSP70 Locus</small><strong>A - T</strong></div>
-      <div class="locus" id="loc1" data-idx="1"><small>Membrane SNP</small><strong>C - G</strong></div>
-      <div class="locus" id="loc2" data-idx="2"><small>Chloroplast</small><strong>G - C</strong></div>
+      <div class="locus" id="loc0"><small>HSP70 Locus</small><strong>A - T</strong></div>
+      <div class="locus" id="loc1"><small>Membrane SNP</small><strong>C - G</strong></div>
+      <div class="locus" id="loc2"><small>Chloroplast</small><strong>G - C</strong></div>
     </div>
     <div class="alleles">
-      <div class="allele-tile" id="tile0" draggable="true" data-idx="0" data-pair="G - C">G - C</div>
-      <div class="allele-tile" id="tile1" draggable="true" data-idx="1" data-pair="T - A">T - A</div>
-      <div class="allele-tile" id="tile2" draggable="true" data-idx="2" data-pair="A - T">A - T</div>
+      <button class="allele-btn" id="btn0" onclick="applySNP(0, 'G - C')">+ Insert G-C</button>
+      <button class="allele-btn" id="btn1" onclick="applySNP(1, 'T - A')">+ Insert T-A</button>
+      <button class="allele-btn" id="btn2" onclick="applySNP(2, 'A - T')">+ Insert A-T</button>
     </div>
   </div>
 </div>
 
 <footer>
   <div class="control-group">
-    <label for="tempSlider">Ocean Temperature: <span id="tempLabel">14.0°C</span></label>
+    <label for="tempSlider">Ocean Temperature: <span id="tempLabel">14°C</span></label>
     <input type="range" id="tempSlider" min="12" max="24" step="0.5" value="14" />
   </div>
   <button class="reset-btn" onclick="resetSim()">Reset Wild-Type</button>
@@ -127,86 +126,54 @@
   let temp = 14;
   let mods = [false, false, false];
   let kelps = [];
-  let bubbles = [];
   let time = 0;
 
   function resize() {
     width = canvas.width = canvas.parentElement.clientWidth;
     height = canvas.height = canvas.parentElement.clientHeight;
-    initScene();
+    initKelp();
   }
   window.addEventListener('resize', resize);
 
-  function initScene() {
+  function initKelp() {
     kelps = [];
-    const count = Math.floor(width / 42);
+    const count = Math.floor(width / 36);
     for (let i = 0; i < count; i++) {
       kelps.push({
-        x: 30 + i * 42 + (Math.random() * 14 - 7),
-        maxH: height * (0.58 + Math.random() * 0.24),
+        x: 25 + i * 36 + (Math.random() * 14 - 7),
+        maxH: height * (0.55 + Math.random() * 0.25),
         health: 1,
-        phase: Math.random() * Math.PI * 2
+        phase: Math.random() * Math.PI * 2,
+        blades: 8 + Math.floor(Math.random() * 5)
       });
     }
-    bubbles = Array.from({ length: 22 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: 1.5 + Math.random() * 2.5,
-      vy: 0.4 + Math.random() * 0.7
-    }));
   }
 
   function applySNP(idx, pair) {
-    if (mods[idx]) return;
     mods[idx] = true;
     const loc = document.getElementById('loc' + idx);
     loc.classList.add('modified');
     loc.querySelector('strong').textContent = pair;
-    document.getElementById('tile' + idx).classList.add('used');
+    document.getElementById('btn' + idx).disabled = true;
     updateStats();
   }
-
-  // Drag-and-drop + click support
-  document.querySelectorAll('.allele-tile').forEach(tile => {
-    tile.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', tile.dataset.idx);
-    });
-    tile.addEventListener('click', () => {
-      applySNP(parseInt(tile.dataset.idx), tile.dataset.pair);
-    });
-  });
-
-  document.querySelectorAll('.locus').forEach(loc => {
-    loc.addEventListener('dragover', e => {
-      e.preventDefault();
-      loc.classList.add('drag-over');
-    });
-    loc.addEventListener('dragleave', () => loc.classList.remove('drag-over'));
-    loc.addEventListener('drop', e => {
-      e.preventDefault();
-      loc.classList.remove('drag-over');
-      const idx = parseInt(e.dataTransfer.getData('text/plain'));
-      const tile = document.getElementById('tile' + idx);
-      if (tile) applySNP(idx, tile.dataset.pair);
-    });
-  });
 
   function resetSim() {
     mods = [false, false, false];
     temp = 14;
     document.getElementById('tempSlider').value = 14;
-    document.getElementById('tempLabel').textContent = '14.0°C';
+    document.getElementById('tempLabel').textContent = '14°C';
     const defaults = ['A - T', 'C - G', 'G - C'];
     for (let i = 0; i < 3; i++) {
       const loc = document.getElementById('loc' + i);
       loc.classList.remove('modified');
       loc.querySelector('strong').textContent = defaults[i];
-      document.getElementById('tile' + i).classList.remove('used');
+      document.getElementById('btn' + i).disabled = false;
     }
     updateStats();
   }
 
-  document.getElementById('tempSlider').addEventListener('input', e => {
+  document.getElementById('tempSlider').addEventListener('input', (e) => {
     temp = parseFloat(e.target.value);
     document.getElementById('tempLabel').textContent = temp.toFixed(1) + '°C';
     updateStats();
@@ -214,9 +181,10 @@
 
   function getSurvivalRate() {
     const modCount = mods.filter(Boolean).length;
-    const maxSafeTemp = 15 + modCount * 2.7;
+    const maxSafeTemp = 15 + modCount * 2.7; // Up to 23.1°C with all 3 SNPs
     if (temp <= maxSafeTemp) return 1.0;
-    return Math.max(0.06, 1 - (temp - maxSafeTemp) * 0.22);
+    const excess = temp - maxSafeTemp;
+    return Math.max(0.05, 1 - excess * 0.22);
   }
 
   function updateStats() {
@@ -229,40 +197,65 @@
     survEl.style.color = surv > 70 ? '#2dd4bf' : surv > 35 ? '#f59e0b' : '#f43f5e';
   }
 
-  function drawKelpPlant(k, baseY) {
-    const currentH = k.maxH * (0.18 + 0.82 * k.health);
-    const r = Math.round(30 + (1 - k.health) * 145);
-    const g = Math.round(190 * k.health + 105 * (1 - k.health));
-    const b = Math.round(115 * k.health + 50 * (1 - k.health));
-    const stemColor = `rgb(${r},${g},${b})`;
-    const bladeColor = `rgba(${r + 10},${Math.min(255, g + 15)},${b}, 0.9)`;
+  function draw() {
+    time += 0.03;
+    const heatFactor = Math.max(0, (temp - 14) / 10);
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, `rgb(${12 + heatFactor * 70}, ${65 - heatFactor * 20}, ${95 - heatFactor * 35})`);
+    grad.addColorStop(1, '#040d14');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
 
-    // Calculate stalk points first
-    const segments = 14;
-    const pts = [];
-    for (let s = 0; s <= segments; s++) {
-      const frac = s / segments;
-      const sway = Math.sin(time + k.phase + frac * 3.2) * (16 * frac);
-      pts.push({ x: k.x + sway, y: baseY - currentH * frac });
-    }
+    // Seafloor reef
+    ctx.fillStyle = '#0b1924';
+    ctx.fillRect(0, height - 28, width, 28);
 
-    // Holdfast root anchor
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(k.x - 9, baseY + 2);
-    ctx.lineTo(k.x, baseY - 5);
-    ctx.lineTo(k.x + 9, baseY + 2);
-    ctx.stroke();
+    const targetHealth = getSurvivalRate();
 
-    // Draw continuous central kelp stipe (stalk)
-    ctx.strokeStyle = stemColor;
-    ctx.lineWidth = 4.5;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let s = 1; s < pts.length; s++) {
-      ctx.lineTo(pts[s].x, pts[s].y);
-    }
-    ctx.stroke();
+    kelps.forEach((k) => {
+      k.health += (targetHealth - k.health) * 0.04;
+      const currentH = k.maxH * (0.2 + 0.8 * k.health);
+      const baseX = k.x;
+      const baseY = height - 26;
 
+      // Color shifts from vibrant emerald to bleached olive/brown under stress
+      const r = Math.round(35 + (1 - k.health) * 140);
+      const g = Math.round(185 * k.health + 110 * (1 - k.health));
+      const b = Math.round(115 * k.health + 55 * (1 - k.health));
+      const color = `rgb(${r},${g},${b})`;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+
+      const segments = 12;
+      for (let s = 1; s <= segments; s++) {
+        const frac = s / segments;
+        const sway = Math.sin(time + k.phase + frac * 3) * (14 * frac);
+        const px = baseX + sway;
+        const py = baseY - currentH * frac;
+        ctx.lineTo(px, py);
+
+        if (s > 2 && s % 2 === 0 && k.health > 0.15) {
+          ctx.save();
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          const dir = (s % 4 === 0) ? 1 : -1;
+          ctx.ellipse(px + dir * 12 * k.health, py, 14 * k.health, 4 * k.health, dir * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+      ctx.stroke();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  updateStats();
+  draw();
+</script>
+</body>
+</html>
