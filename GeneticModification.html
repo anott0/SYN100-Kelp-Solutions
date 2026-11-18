@@ -6,258 +6,272 @@
 <title>Kelp Genetics & Ocean Warming</title>
 <style>
   :root {
-    --bg: #0b1922;
-    --panel: #13222c;
-    --border: #1e3545;
-    --text: #e6f4f1;
-    --muted: #8ab4c9;
+    --bg: #0b1319;
+    --card: #121e27;
+    --panel: #182631;
+    --border: #243847;
+    --text: #f0f7fa;
+    --muted: #8ea4b5;
     --accent: #2dd4bf;
+    --green: #4ade80;
     --warn: #f59e0b;
     --danger: #f43f5e;
   }
   * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
-    display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+    display: flex; flex-direction: column; min-height: 100vh; padding: 14px;
+    gap: 12px;
   }
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
-  }
-  .title-group h1 { margin: 0; font-size: 16px; font-weight: 700; color: var(--accent); }
-  .title-group p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
-  .metrics { display: flex; gap: 20px; }
-  .metric { text-align: right; }
-  .metric span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; }
-  .metric strong { font-size: 18px; color: var(--text); }
 
-  #viewport { position: relative; flex: 1; width: 100%; overflow: hidden; }
+  /* Main Ecosystem Viewport Card */
+  .viewport-card {
+    position: relative; background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden; height: 340px; flex-shrink: 0;
+  }
   canvas { display: block; width: 100%; height: 100%; }
 
-  .dna-dock {
-    position: absolute; top: 16px; left: 18px;
-    background: rgba(15, 32, 43, 0.92); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 16px; backdrop-filter: blur(6px);
-    width: 340px;
+  .status-header {
+    position: absolute; top: 18px; left: 22px; pointer-events: none;
   }
-  .dna-dock h3 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; }
-  .strand { display: flex; gap: 8px; margin-bottom: 10px; }
-  .locus {
-    flex: 1; padding: 8px 6px; border-radius: 6px; text-align: center;
-    background: #09151e; border: 1.5px dashed var(--muted); transition: 0.2s;
+  .status-pill {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
   }
-  .locus.drag-over { border-color: var(--accent); background: rgba(45, 212, 191, 0.22); transform: scale(1.03); }
-  .locus.modified { border: 1.5px solid var(--accent); background: rgba(45, 212, 191, 0.14); }
-  .locus small { display: block; font-size: 10px; color: var(--muted); margin-bottom: 2px; }
-  .locus strong { font-size: 14px; color: var(--text); }
-  .locus.modified strong { color: var(--accent); }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .status-header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; }
 
-  .alleles { display: flex; gap: 8px; }
-  .allele-tile {
-    flex: 1; padding: 7px 6px; font-size: 12px; font-weight: 700; text-align: center;
-    background: #14344d; color: var(--accent); border: 1px solid var(--accent);
-    border-radius: 6px; cursor: grab; user-select: none; transition: 0.15s;
+  /* Genetic Cell Lab Overlay */
+  .cell-lab {
+    position: absolute; top: 82px; left: 22px; width: 175px;
+    background: rgba(13, 25, 34, 0.88); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px; text-align: center;
+    backdrop-filter: blur(6px);
   }
-  .allele-tile:hover:not(.used) { background: var(--accent); color: #042f2e; }
-  .allele-tile.used { opacity: 0.35; cursor: default; pointer-events: none; border-color: var(--border); color: var(--muted); }
+  .cell-lab h3 {
+    margin: 0 0 10px; font-size: 10px; letter-spacing: 0.7px;
+    text-transform: uppercase; color: var(--muted); text-align: left;
+  }
+  .ring-wrap {
+    position: relative; width: 92px; height: 92px; margin: 0 auto 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .ring-wrap svg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-bg { fill: none; stroke: #1e3545; stroke-width: 3; stroke-dasharray: 3 3; }
+  .ring-fg {
+    fill: none; stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round;
+    transition: stroke-dashoffset 0.35s ease;
+  }
+  .ring-title { font-size: 11px; font-weight: 700; color: #fff; }
+  .ring-sub { font-size: 10px; font-weight: 600; color: var(--accent); margin-top: 2px; }
+  .lab-bar {
+    height: 4px; width: 100%; background: #1e3545; border-radius: 99px; overflow: hidden;
+  }
+  .lab-bar-fill {
+    height: 100%; width: 0%; background: #0284c7; transition: width 0.35s ease;
+  }
 
-  footer {
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    padding: 12px 20px; background: var(--panel); border-top: 1px solid var(--border);
+  /* Thermal Protection Allele Pill */
+  .allele-status {
+    position: absolute; bottom: 18px; right: 20px;
+    background: rgba(13, 25, 34, 0.92); border: 1px solid var(--border);
+    border-radius: 12px; padding: 8px 14px;
+    display: flex; align-items: center; gap: 12px;
+    backdrop-filter: blur(6px);
   }
-  .control-group { display: flex; align-items: center; gap: 12px; flex: 1; }
-  label { font-size: 13px; font-weight: 600; white-space: nowrap; }
-  input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+  .allele-status span { font-size: 12px; font-weight: 600; color: var(--text); }
+  .badge {
+    padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+    background: #1e3545; color: var(--muted); transition: 0.25s;
+  }
+  .badge.active { background: #22c55e; color: #052e16; }
+
+  /* Metrics Row */
+  .metrics-bar {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px; text-align: center;
+  }
+  .metric-box span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .metric-box strong { font-size: 18px; font-weight: 700; color: #fff; }
+
+  /* Bottom Controls & Promoter SNP Sequencer */
+  .sequencer-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .seq-top {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+  }
+  .seq-top h2 { margin: 0; font-size: 14px; font-weight: 700; color: #fff; }
+  .seq-top p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+  .base-row {
+    display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;
+  }
+  .base-btn {
+    background: #0d1922; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 8px 4px; text-align: center; cursor: pointer; transition: 0.15s;
+  }
+  .base-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .base-btn.target { border-style: dashed; border-color: var(--warn); }
+  .base-btn.mutated {
+    border-style: solid; border-color: var(--green);
+    background: rgba(74, 222, 128, 0.14);
+  }
+  .base-btn small { display: block; font-size: 10px; color: var(--muted); margin-bottom: 2px; }
+  .base-btn strong { font-size: 14px; color: #fff; }
+  .base-btn.mutated strong { color: var(--green); }
+
+  .temp-controls {
+    display: flex; align-items: center; gap: 14px;
+    padding-top: 8px; border-top: 1px solid var(--border);
+  }
+  .temp-controls label { font-size: 12px; font-weight: 600; white-space: nowrap; color: var(--text); }
+  .temp-controls input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
   .reset-btn {
-    padding: 7px 14px; background: transparent; color: var(--muted);
+    padding: 6px 12px; background: transparent; color: var(--muted);
     border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px;
   }
-  .reset-btn:hover { color: var(--text); border-color: var(--text); }
+  .reset-btn:hover { color: #fff; border-color: #fff; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="title-group">
-    <h1>1. Heat-Tolerant Genetics (SNP Modification)</h1>
-    <p>Drag heat-resistant base pairs onto the DNA strand (or click) to boost thermal resilience</p>
-  </div>
-  <div class="metrics">
-    <div class="metric">
-      <span>Thermal Limit</span>
-      <strong id="tolVal">15.0°C</strong>
-    </div>
-    <div class="metric">
-      <span>Kelp Survival</span>
-      <strong id="survVal" style="color: #4ade80;">100%</strong>
-    </div>
-  </div>
-</header>
-
-<div id="viewport">
+<div class="viewport-card">
   <canvas id="ocean"></canvas>
-  <div class="dna-dock">
-    <h3>Genetic Cell Lab — Drag Base Pairs</h3>
-    <div class="strand">
-      <div class="locus" id="loc0" data-idx="0"><small>HSP70 Locus</small><strong>A - T</strong></div>
-      <div class="locus" id="loc1" data-idx="1"><small>Membrane SNP</small><strong>C - G</strong></div>
-      <div class="locus" id="loc2" data-idx="2"><small>Chloroplast</small><strong>G - C</strong></div>
+
+  <div class="status-header">
+    <div class="status-pill"><span class="status-dot" id="statusDot"></span> OCEAN ECOSYSTEM STATUS</div>
+    <h1 id="canopyHeadline">Healthy Kelp Canopy</h1>
+  </div>
+
+  <div class="cell-lab">
+    <h3>Genetic Cell Lab</h3>
+    <div class="ring-wrap">
+      <svg viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="42" />
+        <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264" />
+      </svg>
+      <div class="ring-title">Hsp70 Allele</div>
+      <div class="ring-sub" id="modPctLabel">0% Modified</div>
     </div>
-    <div class="alleles">
-      <div class="allele-tile" id="tile0" draggable="true" data-idx="0" data-pair="G - C">G - C</div>
-      <div class="allele-tile" id="tile1" draggable="true" data-idx="1" data-pair="T - A">T - A</div>
-      <div class="allele-tile" id="tile2" draggable="true" data-idx="2" data-pair="A - T">A - T</div>
-    </div>
+    <div class="lab-bar"><div class="lab-bar-fill" id="labBarFill"></div></div>
+  </div>
+
+  <div class="allele-status">
+    <span>Thermal Protection Allele</span>
+    <div class="badge" id="alleleBadge">Wild-Type</div>
   </div>
 </div>
 
-<footer>
-  <div class="control-group">
-    <label for="tempSlider">Water Temp: <span id="tempLabel">14.0°C</span></label>
-    <input type="range" id="tempSlider" min="12" max="24" step="0.5" value="14" />
+<div class="metrics-bar">
+  <div class="metric-box">
+    <span>Water Temp</span>
+    <strong id="tempMetric">15.0 °C</strong>
   </div>
-  <button class="reset-btn" onclick="resetSim()">Reset Wild-Type</button>
-</footer>
+  <div class="metric-box">
+    <span>Kelp Survival</span>
+    <strong id="survMetric" style="color: #4ade80;">100%</strong>
+  </div>
+  <div class="metric-box">
+    <span>Thermal Limit</span>
+    <strong id="limitMetric">16.5 °C</strong>
+  </div>
+</div>
+
+<div class="sequencer-card">
+  <div class="seq-top">
+    <div>
+      <h2>Target Promoter SNP Sequencing</h2>
+      <p id="seqInstruction">Click highlighted bases (#2, #5, #7) to substitute heat-shock activator SNPs</p>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">Reset Genome</button>
+  </div>
+
+  <div class="base-row" id="baseRow"></div>
+
+  <div class="temp-controls">
+    <label for="tempSlider">Simulate Ocean Warming:</label>
+    <input type="range" id="tempSlider" min="13" max="24.5" step="0.5" value="15" />
+  </div>
+</div>
 
 <script>
   const canvas = document.getElementById('ocean');
   const ctx = canvas.getContext('2d');
   let width, height;
 
-  let temp = 14;
-  let mods = [false, false, false];
+  // 8-base promoter sequence; indices 1 (#2), 4 (#5), and 6 (#7) are key thermal SNP targets
+  const initialSequence = [
+    { pos: '#1', wt: 'G', mut: 'G', isTarget: false },
+    { pos: '#2', wt: 'A', mut: 'G', isTarget: true },
+    { pos: '#3', wt: 'T', mut: 'T', isTarget: false },
+    { pos: '#4', wt: 'C', mut: 'C', isTarget: false },
+    { pos: '#5', wt: 'A', mut: 'C', isTarget: true },
+    { pos: '#6', wt: 'G', mut: 'G', isTarget: false },
+    { pos: '#7', wt: 'T', mut: 'A', isTarget: true },
+    { pos: '#8', wt: 'C', mut: 'C', isTarget: false }
+  ];
+
+  let mutatedState = initialSequence.map(() => false);
+  let temp = 15.0;
   let kelps = [];
   let spores = [];
   let time = 0;
 
-  function resize() {
-    width = canvas.width = canvas.parentElement.clientWidth;
-    height = canvas.height = canvas.parentElement.clientHeight;
-    initScene();
-  }
-  window.addEventListener('resize', resize);
-
-  function initScene() {
-    kelps = [];
-    const spacing = 75;
-    const count = Math.max(5, Math.floor((width - 280) / spacing));
-    const startX = Math.min(380, width * 0.36);
-    for (let i = 0; i < count; i++) {
-      kelps.push({
-        x: startX + i * spacing + (Math.random() * 18 - 9),
-        maxH: height * (0.62 + Math.random() * 0.24),
-        health: 1,
-        phase: Math.random() * Math.PI * 2
-      });
-    }
-    spores = Array.from({ length: 24 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: 1.5 + Math.random() * 2,
-      vy: 0.25 + Math.random() * 0.4
-    }));
-  }
-
-  function applySNP(idx, pair) {
-    if (mods[idx]) return;
-    mods[idx] = true;
-    const loc = document.getElementById('loc' + idx);
-    loc.classList.add('modified');
-    loc.querySelector('strong').textContent = pair;
-    document.getElementById('tile' + idx).classList.add('used');
-    updateStats();
-  }
-
-  document.querySelectorAll('.allele-tile').forEach(tile => {
-    tile.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', tile.dataset.idx);
+  function renderBases() {
+    const row = document.getElementById('baseRow');
+    row.innerHTML = '';
+    initialSequence.forEach((b, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'base-btn' + (b.isTarget ? ' target' : '') + (mutatedState[idx] ? ' mutated' : '');
+      const val = mutatedState[idx] ? b.mut : b.wt;
+      btn.innerHTML = `<small>${b.pos}</small><strong>${val}</strong>`;
+      btn.onclick = () => {
+        if (!b.isTarget) return;
+        mutatedState[idx] = !mutatedState[idx];
+        renderBases();
+        updateDashboard();
+      };
+      row.appendChild(btn);
     });
-    tile.addEventListener('click', () => {
-      applySNP(parseInt(tile.dataset.idx), tile.dataset.pair);
-    });
-  });
-
-  document.querySelectorAll('.locus').forEach(loc => {
-    loc.addEventListener('dragover', e => {
-      e.preventDefault();
-      loc.classList.add('drag-over');
-    });
-    loc.addEventListener('dragleave', () => loc.classList.remove('drag-over'));
-    loc.addEventListener('drop', e => {
-      e.preventDefault();
-      loc.classList.remove('drag-over');
-      const idx = parseInt(e.dataTransfer.getData('text/plain'));
-      const tile = document.getElementById('tile' + idx);
-      if (tile) applySNP(idx, tile.dataset.pair);
-    });
-  });
-
-  function resetSim() {
-    mods = [false, false, false];
-    temp = 14;
-    document.getElementById('tempSlider').value = 14;
-    document.getElementById('tempLabel').textContent = '14.0°C';
-    const defaults = ['A - T', 'C - G', 'G - C'];
-    for (let i = 0; i < 3; i++) {
-      const loc = document.getElementById('loc' + i);
-      loc.classList.remove('modified');
-      loc.querySelector('strong').textContent = defaults[i];
-      document.getElementById('tile' + i).classList.remove('used');
-    }
-    updateStats();
   }
 
-  document.getElementById('tempSlider').addEventListener('input', e => {
-    temp = parseFloat(e.target.value);
-    document.getElementById('tempLabel').textContent = temp.toFixed(1) + '°C';
-    updateStats();
-  });
-
-  function getSurvivalRate() {
-    const modCount = mods.filter(Boolean).length;
-    const maxSafeTemp = 15 + modCount * 2.85;
-    if (temp <= maxSafeTemp) return 1.0;
-    return Math.max(0.08, 1 - (temp - maxSafeTemp) * 0.22);
+  function getModProgress() {
+    const targets = initialSequence.filter(b => b.isTarget).length;
+    const active = initialSequence.filter((b, i) => b.isTarget && mutatedState[i]).length;
+    return active / targets;
   }
 
-  function updateStats() {
-    const modCount = mods.filter(Boolean).length;
-    const maxSafeTemp = (15 + modCount * 2.85).toFixed(1);
-    const surv = Math.round(getSurvivalRate() * 100);
-    document.getElementById('tolVal').textContent = maxSafeTemp + '°C';
-    const survEl = document.getElementById('survVal');
-    survEl.textContent = surv + '%';
-    survEl.style.color = surv > 70 ? '#4ade80' : surv > 35 ? '#f59e0b' : '#f43f5e';
+  function getThermalLimit() {
+    return 16.5 + getModProgress() * 7.0; // Scales from 16.5°C up to 23.5°C
   }
 
-  function drawGiantKelp(x, baseY, maxH, health, phase) {
-    const currentH = maxH * (0.18 + 0.82 * health);
-    // Olive-emerald healthy tone shifting to bleached tan under heat stress
-    const r = Math.round(92 * health + 165 * (1 - health));
-    const g = Math.round(145 * health + 135 * (1 - health));
-    const b = Math.round(44 * health + 75 * (1 - health));
-    const stemColor = `rgb(${r},${g},${b})`;
-    const bladeFill = `rgba(${Math.min(255, r + 12)},${Math.min(255, g + 16)},${b}, 0.92)`;
+  function getSurvival() {
+    const limit = getThermalLimit();
+    if (temp <= limit) return 1.0;
+    return Math.max(0.08, 1 - (temp - limit) * 0.24);
+  }
 
-    const segments = 16;
-    const pts = [];
-    for (let s = 0; s <= segments; s++) {
-      const frac = s / segments;
-      const sway = Math.sin(time + phase + frac * 3.4) * (18 * frac);
-      pts.push({ x: x + sway, y: baseY - currentH * frac });
-    }
+  function updateDashboard() {
+    const prog = getModProgress();
+    const pct = Math.round(prog * 100);
+    const limit = getThermalLimit();
+    const surv = Math.round(getSurvival() * 100);
 
-    // Central stipe (continuous line from seabed)
-    ctx.strokeStyle = stemColor;
-    ctx.lineWidth = 3.5;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(pts.x, pts.y);
-    for (let s = 1; s < pts.length; s++) {
-      ctx.lineTo(pts[s].x, pts[s].y);
-    }
-    ctx.stroke();
+    // Update circular ring & bar
+    const circumference = 264;
+    document.getElementById('ringFg').style.strokeDashoffset = circumference * (1 - prog);
+    document.getElementById('modPctLabel').textContent = `${pct}% Modified`;
+    document.getElementById('labBarFill').style.width = `${pct}%`;
 
-    // Alternating curved teardrop blades + pneumatocysts
-    if (health > 0.14) {
-      for (let s = 2; s < pts.length; s += 2) {
+    // Update Allele badge
