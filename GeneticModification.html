@@ -275,3 +275,162 @@
     document.getElementById('labBarFill').style.width = `${pct}%`;
 
     // Update Allele badge
+
+    const badge = document.getElementById('alleleBadge');
+if (pct === 100) {
+badge.textContent = 'Inserted';
+badge.className = 'badge active';
+} else if (pct > 0) {
+badge.textContent = 'Partial';
+badge.className = 'badge';
+} else {
+badge.textContent = 'Wild-Type';
+badge.className = 'badge';
+}
+// Update metrics
+document.getElementById('tempMetric').textContent = ${temp.toFixed(1)} °C;
+document.getElementById('limitMetric').textContent = ${limit.toFixed(1)} °C;
+const survEl = document.getElementById('survMetric');
+survEl.textContent = ${surv}%;
+survEl.style.color = surv > 70 ? '#4ade80' : surv > 35 ? '#f59e0b' : '#f43f5e';
+// Update ecosystem headline
+const headline = document.getElementById('canopyHeadline');
+const dot = document.getElementById('statusDot');
+if (surv > 70) {
+headline.textContent = 'Healthy Kelp Canopy';
+dot.style.background = '#2dd4bf';
+dot.style.boxShadow = '0 0 8px #2dd4bf';
+} else if (surv > 35) {
+headline.textContent = 'Thermal Stress & Bleaching';
+dot.style.background = '#f59e0b';
+dot.style.boxShadow = '0 0 8px #f59e0b';
+} else {
+headline.textContent = 'Severe Canopy Die-Off';
+dot.style.background = '#f43f5e';
+dot.style.boxShadow = '0 0 8px #f43f5e';
+}
+}
+function resetAll() {
+mutatedState = initialSequence.map(() => false);
+temp = 15.0;
+document.getElementById('tempSlider').value = 15.0;
+renderBases();
+updateDashboard();
+}
+document.getElementById('tempSlider').addEventListener('input', e => {
+temp = parseFloat(e.target.value);
+updateDashboard();
+});
+function resize() {
+width = canvas.width = canvas.parentElement.clientWidth;
+height = canvas.height = canvas.parentElement.clientHeight;
+initScene();
+}
+window.addEventListener('resize', resize);
+function initScene() {
+kelps = [];
+const startX = Math.min(255, width * 0.34);
+const spacing = 74;
+const count = Math.max(5, Math.floor((width - startX - 20) / spacing));
+for (let i = 0; i < count; i++) {
+kelps.push({
+x: startX + i * spacing + (Math.random() * 14 - 7),
+maxH: height * (0.72 + Math.random() * 0.2),
+health: 1,
+phase: Math.random() * Math.PI * 2
+});
+}
+spores = Array.from({ length: 24 }, () => ({
+x: Math.random() * width,
+y: Math.random() * height,
+r: 1.5 + Math.random() * 1.8,
+vy: 0.25 + Math.random() * 0.35
+}));
+}
+function drawGiantKelp(x, baseY, maxH, health, phase) {
+const currentH = maxH * (0.2 + 0.8 * health);
+const r = Math.round(92 * health + 165 * (1 - health));
+const g = Math.round(145 * health + 135 * (1 - health));
+const b = Math.round(44 * health + 75 * (1 - health));
+const stemColor = rgb(${r},${g},${b});
+const bladeFill = rgba(${Math.min(255, r + 12)},${Math.min(255, g + 16)},${b}, 0.92);
+const segments = 16;
+const pts = [];
+for (let s = 0; s <= segments; s++) {
+const frac = s / segments;
+const sway = Math.sin(time + phase + frac * 3.4) * (16 * frac);
+pts.push({ x: x + sway, y: baseY - currentH * frac });
+}
+// Continuous central kelp stipe (stalk)
+ctx.strokeStyle = stemColor;
+ctx.lineWidth = 3.2;
+ctx.lineCap = 'round';
+ctx.beginPath();
+ctx.moveTo(pts[0].x, pts[0].y);
+for (let s = 1; s < pts.length; s++) {
+ctx.lineTo(pts[s].x, pts[s].y);
+}
+ctx.stroke();
+// Alternating curved teardrop blades + pneumatocysts
+if (health > 0.14) {
+for (let s = 2; s < pts.length; s += 2) {
+const dir = (s % 4 === 0) ? 1 : -1;
+const p = pts[s];
+const scale = (0.75 + 0.35 * (1 - s / segments)) * health;
+const len = 24 * scale;
+const wid = 8.5 * scale;
+ctx.save();
+ctx.translate(p.x, p.y);
+ctx.rotate(dir * 0.25 + Math.sin(time * 1.4 + phase + s) * 0.08);
+ctx.fillStyle = stemColor;
+ctx.beginPath();
+ctx.arc(dir * 3.5 * scale, -1, 2.8 * scale, 0, Math.PI * 2);
+ctx.fill();
+ctx.fillStyle = bladeFill;
+ctx.beginPath();
+ctx.moveTo(dir * 5 * scale, -1);
+ctx.bezierCurveTo(
+dir * (len * 0.45), -wid * 1.3,
+dir * (len * 0.95), -wid * 0.5,
+dir * len, wid * 0.45
+);
+ctx.bezierCurveTo(
+dir * (len * 0.65), wid * 0.95,
+dir * (len * 0.25), wid * 0.55,
+dir * 5 * scale, -1
+);
+ctx.fill();
+ctx.restore();
+}
+}
+}
+function draw() {
+time += 0.025;
+const heatFactor = Math.max(0, (temp - 15) / 9.5);
+const grad = ctx.createLinearGradient(0, 0, 0, height);
+grad.addColorStop(0, rgb(${14 + heatFactor * 52}, ${42 - heatFactor * 12}, ${52 - heatFactor * 18}));
+grad.addColorStop(1, '#07131a');
+ctx.fillStyle = grad;
+ctx.fillRect(0, 0, width, height);
+ctx.fillStyle = 'rgba(134, 239, 172, 0.22)';
+spores.forEach(s => {
+s.y -= s.vy;
+if (s.y < 0) { s.y = height - 18; s.x = Math.random() * width; }
+ctx.beginPath();
+ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+ctx.fill();
+});
+ctx.fillStyle = '#09151d';
+ctx.fillRect(0, height - 16, width, 16);
+const targetHealth = getSurvival();
+kelps.forEach(k => {
+k.health += (targetHealth - k.health) * 0.04;
+drawGiantKelp(k.x, height - 15, k.maxH, k.health, k.phase);
+});
+requestAnimationFrame(draw);
+}
+renderBases();
+resize();
+updateDashboard();
+draw();
+
